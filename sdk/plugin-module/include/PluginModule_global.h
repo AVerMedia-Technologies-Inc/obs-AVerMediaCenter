@@ -1,0 +1,12 @@
+#ifndef AVT_PLUGIN_MODULE_GLOBAL_H
+#define AVT_PLUGIN_MODULE_GLOBAL_H
+
+#include <QtCore/qglobal.h>
+
+#if defined(AVT_PLUGIN_MODULE)
+#  define AVT_PLUGIN_MODULE_EXPORT Q_DECL_EXPORT
+#else
+#  define AVT_PLUGIN_MODULE_EXPORT Q_DECL_IMPORT
+#endif
+
+#endif // AVT_PLUGIN_MODULE_GLOBAL_H
