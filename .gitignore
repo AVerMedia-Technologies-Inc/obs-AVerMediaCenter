@@ -19,6 +19,7 @@
 !CMakePresets.json
 !LICENSE
 !README.md
+!avermedia_deps.cmake
 
 # Exclude lock files
 *.lock.json

@@ -187,13 +187,13 @@ bool obs_module_load(void)
 	auto locale = obs_module_text("AVT.STREAMING_CENTER.LOCALE");
 	obs_log(LOG_INFO, "locale = %s", locale);
 
+	QMainWindow *obsMain = (QMainWindow *)obs_frontend_get_main_window();
 	auto vstring = obs_get_version_string();
 	auto vcode = obs_get_version();
-	module = new AVerMedia::PluginModule(locale, logger, vstring, vcode);
-
-	QMainWindow *obsMain = (QMainWindow *)obs_frontend_get_main_window();
+	
+	module = new AVerMedia::PluginModule(locale, logger);
 	module->setBackendEventHandler(avt_backend_event_handler);
-	module->load(obsMain);
+	module->load(obsMain, vstring, vcode);
 
 	return true;
 }

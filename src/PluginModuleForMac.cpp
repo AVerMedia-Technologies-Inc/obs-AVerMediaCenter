@@ -33,7 +33,7 @@ struct PluginModule::Impl
     }
 };
 
-PluginModule::PluginModule(const char* locale, Logger* logger, const char* version, int build)
+PluginModule::PluginModule(const char* locale, Logger* logger)
     : m_impl(std::make_unique<Impl>())
 {
     m_impl->logger = logger;
@@ -65,11 +65,11 @@ PluginModule::PluginModule(const char* locale, Logger* logger, const char* versi
         return;
     }
 
-    typedef void* (*CTOR_FUNC)(const char*, Logger*, const char*, int);
+    typedef void* (*CTOR_FUNC)(const char*, Logger*);
     auto ctor = (CTOR_FUNC)dlsym(m_impl->module, "createPluginModule");
     if (ctor) {
         //m_impl->log("PluginModuleMac::createPluginModule()");
-        m_impl->plugin = ctor(locale, logger, version, build);
+        m_impl->plugin = ctor(locale, logger);
     }
 }
 
@@ -78,14 +78,14 @@ PluginModule::~PluginModule()
     //delete m_impl->plugin;
 }
 
-void PluginModule::load(QMainWindow* mainWindow)
+void PluginModule::load(QMainWindow* mainWindow, const char* version, int build)
 {
     //m_impl->log("PluginModuleMac::load()");
-    typedef void (*LOAD_FUNC)(void*, QMainWindow*);
+    typedef void (*LOAD_FUNC)(void*, QMainWindow*, const char*, int);
     auto loadFunc = (LOAD_FUNC)dlsym(m_impl->module, "loadPluginModule");
     if (loadFunc) {
         //m_impl->log("PluginModuleMac::loadPluginModule()");
-        loadFunc(m_impl->plugin, mainWindow);
+        loadFunc(m_impl->plugin, mainWindow, version, build);
     }
 }
 

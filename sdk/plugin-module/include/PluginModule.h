@@ -24,19 +24,18 @@ public:
      *
      * @param language language code, e.g. en_US
      * @param logger logger object
-     * @param version OBS current core version string
-     * @param build OBS current core version
      */
-    PluginModule(const char* language = nullptr, Logger* logger = nullptr,
-                 const char* version = nullptr, int build = 0);
+    PluginModule(const char* language = nullptr, Logger* logger = nullptr);
     ~PluginModule();
 
     /**
      * @brief Load the plugin module. Usually called in `obs_module_load(void)`
      *
      * @param mainWindow Qt main window. We can get it from `obs_frontend_get_main_window()`.
+     * @param version OBS current core version string
+     * @param build OBS current core version
      */
-    void load(QMainWindow* mainWindow);
+    void load(QMainWindow* mainWindow, const char* version = nullptr, int build = 0);
 
     /**
      * @brief Post-load the plugin module. Usually called in `obs_module_post_load(void)`

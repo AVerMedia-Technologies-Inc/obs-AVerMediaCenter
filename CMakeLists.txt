@@ -4,14 +4,10 @@ include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/common/bootstrap.cmake" NO_POLICY_SCO
 
 project(${_name} VERSION ${_version})
 
-# Set built time
-# https://stackoverflow.com/a/71763529/21177210
-string(TIMESTAMP MY_BUILT_TIME "%Y/%m/%d %H:%M:%S")
-message("Built Time: ${MY_BUILT_TIME}")
-add_compile_definitions(MY_BUILT_TIME_STR="${MY_BUILT_TIME}")
-
 option(ENABLE_FRONTEND_API "Use obs-frontend-api for UI functionality" OFF)
 option(ENABLE_QT "Use Qt functionality" OFF)
+
+include(avermedia_deps.cmake) # setup for AVerMedia parameters and dependencies
 
 include(compilerconfig)
 include(defaults)
@@ -49,6 +45,7 @@ target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
 	${CMAKE_CURRENT_SOURCE_DIR}/sdk/plugin-module/include
 )
 if(WIN32)
+    target_add_resource(${CMAKE_PROJECT_NAME} sdk/ap_32.ico) # OPFSC-638
     target_sources(${CMAKE_PROJECT_NAME} PRIVATE
         src/ObsCloseHelper.h
         src/ObsCloseHelper.cpp

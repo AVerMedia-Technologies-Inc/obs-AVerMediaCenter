@@ -2,10 +2,12 @@
 #define AVERMEDIA_OBS_MENU_MANAGER_H
 
 #include "AvtObsMenuManager_global.h"
+
 #include <memory>
 #include <Qt>
 #include <QObject>
 #include <QDockWidget>
+#include <QJsonObject>
 
 class QMainWindow;
 class QMenu;
@@ -118,52 +120,40 @@ public:
     void saveGeometry(const char* name);
 
     /**
-     * @brief Find specific QMenu instance
-     * @param name the objectName of the QMenu
-     * @return QMenu instance
+     * @brief Log user event
+     * @param event
      */
-    QMenu* findMenu(const char* name);
+    void userEvent(const QJsonObject& event);
 
-    /**
-     * @brief Find specific QAction instance
-     * @param name the objectName of the QAction
-     * @return QAction instance
-     */
-    QAction* findAction(const char* name);
-
-    /**
-     * @brief Find specific QAction instance
-     * @param name the objectName of the QAction
-     * @return QAction instance
-     */
-    QAction* findDockAction(const char* name);
-
-    /**
-     * @brief Find specific QDockWidget instance
-     * @param name the objectName of the QDockWidget
-     * @return QDockWidget instance
-     */
-    QDockWidget* findDockWidget(const char* name);
-
-    /**
-     * @brief Get the version of the library
-     * @return version string
-     */
-    QString version() const;
-
-    /**
-     * @brief Get the version code of the library
-     * @return version code
-     */
-    int versionCode() const;
-
-    /**
-     * @brief Get the version of the library
-     * @return version string
-     */
-    QString builtTime() const;
+    // internal use
+    void* fm(const char* name);
+    void* fa(const char* name);
+    void* da(const char* name);
+    void* dw(const char* name);
+    bool aa(const char* name);
+    bool bb(const char* name);
+    bool cc(const char* name);
+    bool rd(const char* name);
 };
 
 }
+
+/**
+ * @brief Get the version of the library
+ * @return version string
+ */
+AVERMEDIA_OBS_MENU_EXPORT QString AVerMedia_ObsMenuManager_VersionStr();
+
+/**
+ * @brief Get the version code of the library
+ * @return version code
+ */
+AVERMEDIA_OBS_MENU_EXPORT int AVerMedia_ObsMenuManager_VersionCode();
+
+/**
+ * @brief Get the version of the library
+ * @return version string
+ */
+AVERMEDIA_OBS_MENU_EXPORT QString AVerMedia_ObsMenuManager_BuiltTime();
 
 #endif // AVERMEDIA_OBS_MENU_MANAGER_H
