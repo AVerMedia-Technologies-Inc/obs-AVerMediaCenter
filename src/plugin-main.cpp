@@ -28,9 +28,32 @@ with this program. If not, see <https://www.gnu.org/licenses/>
 #include "AvtEvent.hpp"
 #include "ObsCloseHelper.h"
 
+#ifdef ENABLE_OBS_BROWSER_INTERFACE
+#include "obs-browser-panel.hpp"
+#include "BrowserInterface.hpp"
+#endif // ENABLE_OBS_BROWSER_INTERFACE
+
 OBS_DECLARE_MODULE()
 OBS_MODULE_USE_DEFAULT_LOCALE(PLUGIN_NAME, "en-US")
 
+#ifdef ENABLE_OBS_BROWSER_INTERFACE
+static QCef* cef = nullptr;
+//static QCefCookieManager* panel_cookies = nullptr;
+static bool cef_js_avail = false;
+
+static void setStartupScriptImpl(const std::string& script, void* widget) {
+	if (QCefWidget* cefWidget = static_cast<QCefWidget*>(widget)) {
+		cefWidget->setStartupScript(script);
+	}
+}
+
+static void executeJavaScriptImpl(const std::string& script, void* widget) {
+	if (QCefWidget* cefWidget = static_cast<QCefWidget*>(widget)) {
+		cefWidget->executeJavaScript(script);
+	}
+}
+
+#endif // ENABLE_OBS_BROWSER_INTERFACE
 
 // implement obs logging
 class AvtLogger : public AVerMedia::Logger
@@ -168,6 +191,54 @@ static void avt_backend_event_handler(std::string model, int what, const char* d
 		//QCoreApplication::postEvent(qApp, new QEvent(QEvent::Close));
 	}
 		break;
+
+#ifdef ENABLE_OBS_BROWSER_INTERFACE
+	case AVerMedia::EventType::AVT_EVENT_QUERY_BROWSER_INSTANCE:
+	{
+		if (cef == nullptr) {
+			cef = obs_browser_init_panel();
+			cef_js_avail = cef && obs_browser_qcef_version() >= 3;
+			obs_log(LOG_INFO, "CEF initialized: %p %d", cef, cef_js_avail);
+			if (cef) {
+				cef->init_browser();
+			}
+		}
+		if (cef == nullptr) {
+			obs_log(LOG_ERROR, "ERROR CEF not initialized");
+			return;
+		}
+		
+		auto inputJson = obs_data_create_from_json(data);
+		auto targetUrl = obs_data_get_string(inputJson, "url");		
+		obs_log(LOG_INFO, "cef->create_widget ++");
+		QCefWidget* cefWidget = cef->create_widget(nullptr, targetUrl);
+		obs_log(LOG_INFO, "cef->create_widget --");
+		QString cefWidgetPtrString = QString::number(reinterpret_cast<quintptr>(cefWidget), 16);
+		QByteArray cefWidgetPtrStringBytes = cefWidgetPtrString.toUtf8();
+		
+		SetStartupScriptFunc setStartupScriptFunc = &setStartupScriptImpl;
+		ExecuteJavaScriptFunc executeJavaScriptFunc = &executeJavaScriptImpl;
+
+		QString setStartupScriptFuncString = QString::number(reinterpret_cast<quintptr>(setStartupScriptFunc), 16);
+		QByteArray setStartupScriptFuncStringBytes = setStartupScriptFuncString.toUtf8();
+
+		QString executeJavaScriptFuncString = QString::number(reinterpret_cast<quintptr>(executeJavaScriptFunc), 16);
+		QByteArray executeJavaScriptFuncStringBytes = executeJavaScriptFuncString.toUtf8();
+
+		auto json = obs_data_create();
+		obs_data_apply(json, inputJson); // OPFSC-1181: Merges the data of inputJson in to json.
+		obs_data_set_string(json, "cefWidgetPtr", cefWidgetPtrStringBytes.constData());
+		obs_data_set_string(json, "setStartupScriptPtr", setStartupScriptFuncStringBytes.constData());
+		obs_data_set_string(json, "executeJavaScriptPtr", executeJavaScriptFuncStringBytes.constData());
+
+		auto str = obs_data_get_json(json);
+		if (module) module->sendEvent(model, AVerMedia::EventType::AVT_EVENT_QUERY_BROWSER_INSTANCE, str);
+		
+		obs_data_release(inputJson);
+		obs_data_release(json);
+	}
+	break;
+#endif // ENABLE_OBS_BROWSER_INTERFACE
 
 	default:
 		obs_log(LOG_INFO, "%s %d: %s", model.c_str(), what, data);

@@ -68,8 +68,14 @@ elseif(APPLE)
         src/ObsCloseHelper.mm
     )
     target_add_resource(${CMAKE_PROJECT_NAME}
-        ${CMAKE_CURRENT_SOURCE_DIR}/sdk/plugin-module/lib/libAvtPluginModule.dylib
+        "${CMAKE_CURRENT_SOURCE_DIR}/sdk/plugin-module/lib/libAvtPluginModule.dylib"
     )
 elseif(UNIX)
     message("https://cmake.org/cmake/help/latest/variable/UNIX.html?highlight=unix")
+endif()
+
+if (ENABLE_BROWSER)
+    target_sources(${CMAKE_PROJECT_NAME} PRIVATE
+        src/obs-browser-panel.hpp
+    )
 endif()

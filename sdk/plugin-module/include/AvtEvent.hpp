@@ -83,7 +83,9 @@ enum EventType
     AVT_EVENT_GA,
     AVT_EVENT_SHUTDOWN,
 
-    AVT_EVENT_DELETE_CDC_LOG
+    AVT_EVENT_DELETE_CDC_LOG,
+
+    AVT_EVENT_QUERY_BROWSER_INSTANCE,
 };
 
 /**
@@ -229,6 +231,8 @@ struct EventInfo
         case EventType::AVT_EVENT_DELETE_CDC_LOG:
             return "AVT_EVENT_DELETE_CDC_LOG";
 
+        case EventType::AVT_EVENT_QUERY_BROWSER_INSTANCE:
+            return "AVT_EVENT_QUERY_BROWSER_INSTANCE";
         default:
             return "UNKNOWN";
         }

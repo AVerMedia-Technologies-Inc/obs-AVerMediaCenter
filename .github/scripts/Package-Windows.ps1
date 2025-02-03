@@ -48,7 +48,7 @@ function Package {
     $ProductName = $BuildSpec.displayName.replace(' ','')
     $ProductVersion = $BuildSpec.version
 
-    $OutputName = "${ProductName}-${ProductVersion}-windows-${Target}"
+    $OutputName = "AVerMedia${ProductName}-${ProductVersion}-windows-${Target}"
 
     if ( ! $SkipDeps ) {
         Install-BuildDependencies -WingetFile "${ScriptHome}/.Wingetfile"

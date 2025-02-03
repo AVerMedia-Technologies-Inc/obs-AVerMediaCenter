@@ -161,6 +161,10 @@ ${_usage_host:-}"
     check_${host_os}
   }
 
+  # display name may be different from project code
+  local display_name
+  read -r display_name <<< \
+    "$(jq -r '. | {displayName} | join("") | split(" ") | join("")' ${buildspec_file})"
   local product_name
   local product_version
   read -r product_name product_version <<< \
@@ -169,7 +173,7 @@ ${_usage_host:-}"
   if [[ ${host_os} == macos ]] {
     autoload -Uz check_packages read_codesign read_codesign_installer read_codesign_pass
 
-    local output_name="${product_name}-${product_version}-${host_os}-universal"
+    local output_name="AVerMedia${display_name}-${product_version}-${host_os}-universal"
 
     if [[ ! -d ${project_root}/release/${config}/${product_name}.plugin ]] {
       log_error 'No release artifact found. Run the build script or the CMake install procedure first.'

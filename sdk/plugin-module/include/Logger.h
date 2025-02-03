@@ -9,6 +9,7 @@ namespace AVerMedia
 class AVT_PLUGIN_MODULE_EXPORT Logger
 {
 public:
+    virtual ~Logger() = default;
     virtual void log(const char* message) = 0;
 };
 

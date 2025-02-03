@@ -20,7 +20,7 @@ set(OBS_PLUGIN_PROJECT_NAME ${projectName})
 set(OBS_PLUGIN_DISPLAY_NAME ${displayName})
 set(OBS_PLUGIN_MAIN_VERSION ${pluginVersion})
 
-set(_obs_dependencies_list obs-studio)
+set(_obs_dependencies_list prebuilt qt6 obs-studio)
 foreach(dependency IN LISTS _obs_dependencies_list)
 	# cmake-format: off
 	string(JSON data GET ${dependency_data} ${dependency})
@@ -28,7 +28,11 @@ foreach(dependency IN LISTS _obs_dependencies_list)
 	string(JSON label GET ${data} label)
 	# cmake-format: on
 
-	if(dependency STREQUAL obs-studio)
+    if(dependency STREQUAL prebuilt)
+        set(_obs_prebuilt_version ${version})
+    elseif(dependency STREQUAL qt6)
+        set(_obs_qt6_version ${version})
+    elseif(dependency STREQUAL obs-studio)
 		set(_obs_version ${version})
 	elseif(dependency STREQUAL avt-center)
 		set(_center_version ${version})
@@ -36,6 +40,15 @@ foreach(dependency IN LISTS _obs_dependencies_list)
 
 	#message(STATUS "Found ${label} ${version} - done")
 endforeach()
+
+if (WIN32)
+    set(extra_obs_prebuilt_arch "x64")
+endif()
+if (APPLE)
+    set(extra_obs_prebuilt_arch "universal")
+endif()
+set(extra_obs_prebuilt_deps "obs-deps-${_obs_prebuilt_version}")
+set(extra_obs_deps_dir "${CMAKE_CURRENT_LIST_DIR}/.deps")
 
 # split OBS version string
 string(REPLACE "." ";" _obs_version_list ${_obs_version})
@@ -64,3 +77,4 @@ set(PLUGIN_MAIN_VERSION_MAJOR ${MAIN_VERSION_major})
 set(PLUGIN_MAIN_VERSION_MINOR ${MAIN_VERSION_minor})
 set(PLUGIN_MAIN_VERSION_PATCH ${MAIN_VERSION_patch})
 #set(PLUGIN_MAIN_VERSION_BUILD ${MAIN_VERSION_build}) # reserved
+string(TIMESTAMP MY_BUILD_NUMBER "%m%d%H%M")

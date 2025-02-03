@@ -1,5 +1,5 @@
 #define MyAppName "@CMAKE_PROJECT_NAME@"
-#define MyAppDisplayName "@PLUGIN_DISPLAY_NAME@"
+#define MyAppDisplayName "AVerMedia @PLUGIN_DISPLAY_NAME@"
 #define MyAppVersion "@CMAKE_PROJECT_VERSION@"
 #define MyAppPublisher "@PLUGIN_AUTHOR@"
 #define MyAppURL "@PLUGIN_WEBSITE@"
@@ -68,7 +68,9 @@ Root: HKLM64; Subkey: "SOFTWARE\AVerMedia\OBS_Plugins\{#MyAppName}"; ValueType: 
 Root: HKLM64; Subkey: "SOFTWARE\AVerMedia\OBS_Plugins\{#MyAppName}"; ValueType: string; ValueName: "Language"; ValueData: "{language}"; Check: IsWin64
 Root: HKLM64; Subkey: "SOFTWARE\AVerMedia\OBS_Plugins\{#MyAppName}"; ValueType: string; ValueName: "Uninstaller"; ValueData: "{uninstallexe}"; Check: IsWin64
 Root: HKLM64; Subkey: "SOFTWARE\AVerMedia\OBS_Plugins\{#MyAppName}"; ValueType: string; ValueName: "Version"; ValueData: "{#MyAppVersion}"; Check: IsWin64
+Root: HKLM64; Subkey: "SOFTWARE\AVerMedia\OBS_Plugins\{#MyAppName}"; ValueType: string; ValueName: "DisplayName"; ValueData: "{#MyAppDisplayName}"; Check: IsWin64
 Root: HKLM64; Subkey: "SOFTWARE\AVerMedia\OBS_Plugins\{#MyAppName}"; ValueType: string; ValueName: "FilePath"; ValueData: "{app}\obs-plugins\64bit\{#MyAppName}.dll"; Check: IsWin64
+Root: HKLM64; Subkey: "SOFTWARE\AVerMedia\OBS_Plugins\{#MyAppName}"; ValueType: string; ValueName: "DataPath"; ValueData: "{userappdata}\{#MyAppFolder}"; Check: IsWin64
 
 ; How to delete folder during uninstallation process?
 ; https://stackoverflow.com/a/13544329
@@ -82,6 +84,7 @@ Type: filesandordirs; Name: "{group}"
 [Code]
 
 const
+  // OBS Studio version
   MinimumMajor = @PLUGIN_MIN_OBS_MAJOR@;
   MinimumMinor = @PLUGIN_MIN_OBS_MINOR@;
   MinimumPatch = @PLUGIN_MIN_OBS_PATCH@;
@@ -96,12 +99,12 @@ begin
   ExtractTemporaryFile('LICENSE');
   LoadStringFromFile(ExpandConstant('{tmp}\LICENSE'), GPLText);
   Page := CreateOutputMsgMemoPage(wpWelcome,
-    ExpandConstant('{cm:GPL_LicenseInformation}'), ExpandConstant('{cm:GPL_ReviewLicense,{#MyAppName}}'),
+    ExpandConstant('{cm:GPL_LicenseInformation}'), ExpandConstant('{cm:GPL_ReviewLicense,{#MyAppDisplayName}}'),
     ExpandConstant('{cm:GPL_LicenseInfoDesc}'),
     String(GPLText)
   );
 
-  PageFromID(wpLicense).Description := ExpandConstant('{cm:LicenseLabel1,{#MyAppName}}');
+  PageFromID(wpLicense).Description := ExpandConstant('{cm:LicenseLabel1,{#MyAppDisplayName}}');
   // How to change default choice in License agreement in INNO Setup
   // https://stackoverflow.com/a/51291566/21177210
   WizardForm.LicenseAcceptedRadio.Checked := True;
@@ -186,10 +189,6 @@ end;
 function WriteGaToIni(): Boolean;
 begin
   SetIniBool('GA', 'enabled', False, ExpandConstant('{userappdata}\{#MyAppFolder}\ga.ini'));
-  // clear the update timer now
-  SetIniString('assets', 'device\last_update_time', '', ExpandConstant('{userappdata}\{#MyAppFolder}\avtobs.ini'));
-  SetIniString('assets', 'plugin\last_update_time', '', ExpandConstant('{userappdata}\{#MyAppFolder}\avtobs.ini'));
-  SetIniString('assets', 'app\last_update_time', '', ExpandConstant('{userappdata}\{#MyAppFolder}\avtobs.ini'));
   Result := True;
 end;
 
@@ -312,9 +311,13 @@ begin
   if IsAppRunning('obs64.exe') then begin
     Result := False;
     Log('obs64.exe still running... Abort.');
-	MsgBox(SetupMessage(msgErrorCloseApplications), mbError, MB_OK);
+    MsgBox(SetupMessage(msgErrorCloseApplications), mbError, MB_OK);
   end else begin
     Result := True;
   end
 
 end;
+
+// Inno Setup: How do I see the output (translation) of the Inno Setup Preprocessor?
+// https://stackoverflow.com/a/3328474
+#expr SaveToFile(AddBackslash(SourcePath) + "installer-preprocessed.iss")
